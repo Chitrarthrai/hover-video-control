@@ -1,10 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Hover Video Control</title>
-  </head>
-  <body>
-    <h1>Hover Video Control</h1>
-    <p>Hover over a video to play/pause it.</p>
-  </body>
+<head>
+  <title>Hover Video Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      width: 200px;
+    }
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hover Video Control</h1>
+  <label>
+    <span>Enable</span>
+    <input type="checkbox" id="toggle">
+  </label>
+
+  <script>
+    const toggle = document.getElementById('toggle');
+
+    // Load the current state
+    chrome.storage.sync.get('hoverControlEnabled', (data) => {
+      toggle.checked = data.hoverControlEnabled ?? true; // Default to true if not set
+    });
+
+    // Update the state when the checkbox is clicked
+    toggle.addEventListener('change', () => {
+      chrome.storage.sync.set({ hoverControlEnabled: toggle.checked });
+      
+      // Reload the current tab to apply changes
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          function: (enable) => {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+              if (enable) {
+                video.addEventListener('mouseover', controlVideoPlayback);
+                video.addEventListener('mouseout', controlVideoPlayback);
+              } else {
+                video.removeEventListener('mouseover', controlVideoPlayback);
+                video.removeEventListener('mouseout', controlVideoPlayback);
+              }
+            });
+          },
+          args: [toggle.checked]
+        });
+      });
+    });
+  </script>
+</body>
 </html>
