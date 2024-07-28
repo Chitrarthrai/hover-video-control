@@ -46,3 +46,10 @@ chrome.storage.sync.get('hoverControlEnabled', (data) => {
 
   observer.observe(document.body, { childList: true, subtree: true });
 });
+
+// Listen for changes to the hover control setting
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.hoverControlEnabled) {
+    toggleHoverControl(changes.hoverControlEnabled.newValue);
+  }
+});

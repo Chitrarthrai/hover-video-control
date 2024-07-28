@@ -61,7 +61,7 @@
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           chrome.scripting.executeScript({
             target: { tabId: tabs[0].id },
-            function: (enable) => {
+            func: (enable) => {
               const controlVideoPlayback = (event) => {
                 if (event.type === 'mouseover') {
                   event.target.play();
