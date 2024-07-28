@@ -17,7 +17,7 @@ function removeHoverControl(video) {
 }
 
 function toggleHoverControl(enable) {
-  const videos = document.querySelectorAll('video, #movie_player video');
+  const videos = document.querySelectorAll('video, #movie_player video, .html5-main-video');
   videos.forEach(video => {
     if (enable) {
       addHoverControl(video);
@@ -35,7 +35,7 @@ chrome.storage.sync.get('hoverControlEnabled', (data) => {
   const observer = new MutationObserver(mutations => {
     mutations.forEach(mutation => {
       mutation.addedNodes.forEach(node => {
-        if (node.nodeName === 'VIDEO' || node.matches && node.matches('#movie_player video')) {
+        if (node.nodeName === 'VIDEO' || (node.matches && node.matches('video, #movie_player video, .html5-main-video'))) {
           if (isEnabled) {
             addHoverControl(node);
           }
