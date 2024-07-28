@@ -14,62 +14,75 @@
       margin: 0 0 10px;
       padding: 0;
     }
-    label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
+    button {
       font-size: 14px;
+      padding: 10px 20px;
+      color: #fff;
+      background-color: #0078d7;
+      border: none;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      outline: none;
     }
-    #toggle {
-      transform: scale(1.5);
+    button:active {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    .icon {
-      width: 48px;
-      height: 48px;
+    button.enabled {
+      background-color: #28a745;
+    }
+    button.disabled {
+      background-color: #dc3545;
     }
   </style>
 </head>
 <body>
   <h1>Hover Video Control</h1>
-  <img src="icons/icon48.png" alt="Extension Icon" class="icon">
-  <label>
-    <span>Enable</span>
-    <input type="checkbox" id="toggle">
-  </label>
+  <button id="toggleButton">Loading...</button>
 
   <script>
-    const toggle = document.getElementById('toggle');
+    const toggleButton = document.getElementById('toggleButton');
 
     // Load the current state
     chrome.storage.sync.get('hoverControlEnabled', (data) => {
-      toggle.checked = data.hoverControlEnabled ?? true; // Default to true if not set
+      const isEnabled = data.hoverControlEnabled ?? true; // Default to true if not set
+      updateButtonState(isEnabled);
     });
 
-    // Update the state when the checkbox is clicked
-    toggle.addEventListener('change', () => {
-      chrome.storage.sync.set({ hoverControlEnabled: toggle.checked });
-      
-      // Reload the current tab to apply changes
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: (enable) => {
-            const videos = document.querySelectorAll('video, #movie_player video, .html5-main-video');
-            videos.forEach(video => {
-              if (enable) {
-                video.addEventListener('mouseover', controlVideoPlayback);
-                video.addEventListener('mouseout', controlVideoPlayback);
-              } else {
-                video.removeEventListener('mouseover', controlVideoPlayback);
-                video.removeEventListener('mouseout', controlVideoPlayback);
-              }
-            });
-          },
-          args: [toggle.checked]
+    // Update the state when the button is clicked
+    toggleButton.addEventListener('click', () => {
+      chrome.storage.sync.get('hoverControlEnabled', (data) => {
+        const isEnabled = data.hoverControlEnabled ?? true;
+        const newState = !isEnabled;
+        chrome.storage.sync.set({ hoverControlEnabled: newState });
+        updateButtonState(newState);
+
+        // Reload the current tab to apply changes
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            function: (enable) => {
+              const videos = document.querySelectorAll('video, #movie_player video, .html5-main-video');
+              videos.forEach(video => {
+                if (enable) {
+                  video.addEventListener('mouseover', controlVideoPlayback);
+                  video.addEventListener('mouseout', controlVideoPlayback);
+                } else {
+                  video.removeEventListener('mouseover', controlVideoPlayback);
+                  video.removeEventListener('mouseout', controlVideoPlayback);
+                }
+              });
+            },
+            args: [newState]
+          });
         });
       });
     });
+
+    function updateButtonState(isEnabled) {
+      toggleButton.textContent = isEnabled ? 'Disable Hover Control' : 'Enable Hover Control';
+      toggleButton.className = isEnabled ? 'enabled' : 'disabled';
+    }
   </script>
 </body>
 </html>
