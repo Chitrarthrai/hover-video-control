@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const newState = !isEnabled;
       chrome.storage.sync.set({ hoverControlEnabled: newState }, () => {
         updateButtonState(newState);
-        
+
         // Reload the current tab to apply changes
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           chrome.scripting.executeScript({
