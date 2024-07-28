@@ -62,14 +62,30 @@
           chrome.scripting.executeScript({
             target: { tabId: tabs[0].id },
             function: (enable) => {
+              const controlVideoPlayback = (event) => {
+                if (event.type === 'mouseover') {
+                  event.target.play();
+                } else if (event.type === 'mouseout') {
+                  event.target.pause();
+                }
+              };
+
+              const addHoverControl = (video) => {
+                video.addEventListener('mouseover', controlVideoPlayback);
+                video.addEventListener('mouseout', controlVideoPlayback);
+              };
+
+              const removeHoverControl = (video) => {
+                video.removeEventListener('mouseover', controlVideoPlayback);
+                video.removeEventListener('mouseout', controlVideoPlayback);
+              };
+
               const videos = document.querySelectorAll('video, #movie_player video, .html5-main-video');
               videos.forEach(video => {
                 if (enable) {
-                  video.addEventListener('mouseover', controlVideoPlayback);
-                  video.addEventListener('mouseout', controlVideoPlayback);
+                  addHoverControl(video);
                 } else {
-                  video.removeEventListener('mouseover', controlVideoPlayback);
-                  video.removeEventListener('mouseout', controlVideoPlayback);
+                  removeHoverControl(video);
                 }
               });
             },
